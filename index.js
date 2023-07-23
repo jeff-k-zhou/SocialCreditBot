@@ -1,18 +1,43 @@
 require("dotenv").config()
-const { Client, GatewayIntentBits } = require("discord.js")
-const { ViewCredits } = require("./embeds")
-const LoadUp = require("./commandapi")
+const { Client, GatewayIntentBits, Collection, Events } = require("discord.js")
 const db = require("./firebase")
-const { setDoc, getDoc, doc, updateDoc, arrayUnion, arrayRemove, deleteField } = require("firebase/firestore")
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] })
+const path = require("node:path")
+const fs = require("node:fs")
+const Loadup = require("./loadup")
+const { setDoc, getDoc, doc, updateDoc, deleteField, deleteDoc, increment } = require("firebase/firestore")
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+    ]
+})
 const token = process.env.TOKEN
+
+client.commands = new Collection()
+
+const commandsPath = path.join(__dirname, "commands")
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"))
+
+for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file)
+    const command = require(filePath)
+
+    if ("data" in command && "execute" in command) {
+        client.commands.set(command.data.name, command)
+    } else {
+        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`)
+    }
+}
+
+
 
 client.on("ready", () => {
     console.log(`Logged as ${client.user.tag}`)
-    LoadUp()
+    Loadup()
 })
 
-client.on("guildCreate", (guild) => {
+client.on(Events.GuildCreate, (guild) => {
     getDoc(doc(db, "servers", guild.id)).then((docSnap) => {
         if (docSnap.exists()) {
             guild.systemChannel.send("Unexpected error: Server ID already exists. DM longhua for support. Leaving server now.")
@@ -34,7 +59,11 @@ client.on("guildCreate", (guild) => {
     })
 })
 
-client.on("guildMemberAdd", (member) => {
+client.on(Events.GuildDelete, (guild) => {
+    deleteDoc(doc(db, "servers", guild.id))
+})
+
+client.on(Events.GuildMemberAdd, (member) => {
     getDoc(doc(db, "servers", member.guild.id)).then((docSnap) => {
         if (docSnap.exists()) {
             updateDoc(doc(db, "servers", member.guild.id), {
@@ -44,7 +73,7 @@ client.on("guildMemberAdd", (member) => {
     })
 })
 
-client.on("guildMemberRemove", (member) => {
+client.on(Events.GuildMemberRemove, (member) => {
     getDoc(doc(db, "servers", member.guild.id)).then((docSnap) => {
         if (docSnap.exists()) {
             updateDoc(doc(db, "servers", member.guild.id), {
@@ -54,21 +83,60 @@ client.on("guildMemberRemove", (member) => {
     })
 })
 
-client.on("interactionCreate", interaction => {
-    if (!interaction.isChatInputCommand()) {
+client.on(Events.InteractionCreate, async interaction => {
+    if (!interaction.isChatInputCommand()) return
+
+    const command = interaction.client.commands.get(interaction.commandName)
+
+    if (!command) {
+        interaction.reply({ content: "Unexepected error: Command does not exist. DM longhua for support." })
+        console.error(`No command matching ${interaction.commandName} was found.`)
         return
     }
 
-    if (interaction.commandName === "ping") {
-        interaction.reply("pong")
-    } else if (interaction.commandName === "credits") {
-        getDoc(doc(db, "servers", interaction.guild.id)).then((docSnap) => {
-            if (docSnap.exists()) {
-                const embed = ViewCredits(interaction.user.username, docSnap.data()[interaction.user.id])
-                interaction.reply({ embeds: [embed] })
-            } else {
-                interaction.reply("Unexpected Error: User does not exist. DM longhua for support.")
+    try {
+        await command.execute(interaction)
+    } catch (error) {
+        console.error(error)
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: "Unexpected error. DM longhua for support.", ephemeral: true })
+        } else {
+            await interaction.reply({ content: "Unexpected error. DM longhua for support.", ephemeral: true })
+        }
+    }
+})
+
+const userMap = new Map()
+const limit = 7
+const diff = 60000
+
+client.on(Events.MessageCreate, message => {
+    if (message.author.bot) return
+
+    const userid = message.author.id
+    if (userMap.has(userid)) {
+        const userData = userMap.get(userid)
+        const difference = message.createdTimestamp - userData.lastMessage.createdTimestamp
+        let msgCount = userData.msgCount
+        console.log(difference)
+
+        if (difference > diff) {
+            userData.msgCount = 1
+            userData.lastMessage = message
+        } else {
+            ++msgCount
+            if (!(parseInt(msgCount) === limit)) {
+                const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
+                updateDoc(doc(db, "servers", message.guild.id), {
+                    [message.author.id]: increment(increase)
+                })
+                userData.msgCount = msgCount
             }
+        }
+    } else {
+        userMap.set(message.author.id, {
+            msgCount: 1,
+            lastMessage: message
         })
     }
 })
