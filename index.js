@@ -107,7 +107,7 @@ client.on(Events.InteractionCreate, async interaction => {
 })
 
 const userMap = new Map()
-const limit = 7
+const limit = 15
 const diff = 60000
 
 client.on(Events.MessageCreate, message => {
