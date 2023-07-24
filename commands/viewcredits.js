@@ -22,9 +22,9 @@ module.exports = {
                 } else {
                     embed = ViewCredits(target.username, docSnap.data()[target.id])
                 }
-                interaction.reply({ embeds: [embed] })
+                interaction.deferReply({ embeds: [embed] })
             } else {
-                interaction.reply("Error: User does not exist. DM longhua for support.")
+                interaction.deferReply("Error: User does not exist. DM longhua for support.")
             }
         })
     } 

@@ -89,7 +89,7 @@ client.on(Events.InteractionCreate, async interaction => {
     const command = interaction.client.commands.get(interaction.commandName)
 
     if (!command) {
-        interaction.reply({ content: "Unexepected error: Command does not exist. DM longhua for support." })
+        interaction.deferReply({ content: "Unexepected error: Command does not exist. DM longhua for support." })
         console.error(`No command matching ${interaction.commandName} was found.`)
         return
     }
@@ -101,7 +101,7 @@ client.on(Events.InteractionCreate, async interaction => {
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({ content: "Unexpected error. DM longhua for support.", ephemeral: true })
         } else {
-            await interaction.reply({ content: "Unexpected error. DM longhua for support.", ephemeral: true })
+            await interaction.deferReply({ content: "Unexpected error. DM longhua for support.", ephemeral: true })
         }
     }
 })
