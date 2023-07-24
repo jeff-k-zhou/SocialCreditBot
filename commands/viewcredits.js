@@ -16,7 +16,7 @@ module.exports = {
         ),
     async execute(interaction) {
         const target = interaction.options.getUser("target")
-        if (!(target.user.bot)) {
+        if (!(target.bot)) {
             await getDoc(doc(db, "servers", interaction.guild.id)).then((docSnap) => {
                 if (docSnap.exists()) {
                     let embed;
