@@ -45,16 +45,14 @@ client.on(Events.GuildCreate, (guild) => {
             guild.leave()
         } else {
             guild.members.fetch().then((list) => {
-                const members = list.map(member => member.user.id)
+                const members = list.filter(member => !member.user.bot).map(member => member.user.id)
                 setDoc(doc(db, "servers", guild.id), {
 
                 }).then(() => {
                     members.forEach((member) => {
-                        if (!(member === botid)) {
                             updateDoc(doc(db, "servers", guild.id), {
                                 [member]: 0
                             })
-                        }
                     })
                 })
             })

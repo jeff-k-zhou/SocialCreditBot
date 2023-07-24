@@ -16,7 +16,7 @@ module.exports = {
         ),
     async execute(interaction) {
         const target = interaction.options.getUser("target")
-        if (!(target.id === botid)) {
+        if (!(target.user.bot)) {
             await getDoc(doc(db, "servers", interaction.guild.id)).then((docSnap) => {
                 if (docSnap.exists()) {
                     let embed;
@@ -31,7 +31,7 @@ module.exports = {
                 }
             })
         } else {
-            interaction.reply({ content: "I have no credits.", ephemeral: true })
+            interaction.reply({ content: "Bots cannot have credits", ephemeral: true })
         }
     }
 }
