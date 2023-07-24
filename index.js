@@ -13,6 +13,7 @@ const client = new Client({
     ]
 })
 const token = process.env.TOKEN
+const botid = process.env.BOTID
 
 client.commands = new Collection()
 
@@ -49,9 +50,11 @@ client.on(Events.GuildCreate, (guild) => {
 
                 }).then(() => {
                     members.forEach((member) => {
-                        updateDoc(doc(db, "servers", guild.id), {
-                            [member]: 0
-                        })
+                        if (!(member === botid)) {
+                            updateDoc(doc(db, "servers", guild.id), {
+                                [member]: 0
+                            })
+                        }
                     })
                 })
             })
@@ -107,7 +110,7 @@ client.on(Events.InteractionCreate, async interaction => {
 })
 
 const userMap = new Map()
-const limit = 15
+const limit = 7
 const diff = 60000
 
 client.on(Events.MessageCreate, message => {
