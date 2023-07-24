@@ -127,6 +127,10 @@ client.on(Events.MessageCreate, message => {
         if (difference > diff) {
             userData.msgCount = 1
             userData.lastMessage = message
+            const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
+            updateDoc(doc(db, "servers", message.guild.id), {
+                [message.author.id]: increment(increase)
+            })
         } else {
             ++msgCount
             if (!(parseInt(msgCount) === limit)) {
