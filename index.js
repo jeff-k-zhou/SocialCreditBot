@@ -50,9 +50,9 @@ client.on(Events.GuildCreate, (guild) => {
 
                 }).then(() => {
                     members.forEach((member) => {
-                            updateDoc(doc(db, "servers", guild.id), {
-                                [member]: 0
-                            })
+                        updateDoc(doc(db, "servers", guild.id), {
+                            [member]: 0
+                        })
                     })
                 })
             })
@@ -67,9 +67,11 @@ client.on(Events.GuildDelete, (guild) => {
 client.on(Events.GuildMemberAdd, (member) => {
     getDoc(doc(db, "servers", member.guild.id)).then((docSnap) => {
         if (docSnap.exists()) {
-            updateDoc(doc(db, "servers", member.guild.id), {
-                [member.id]: 0
-            })
+            if (!member.user.bot) {
+                updateDoc(doc(db, "servers", member.guild.id), {
+                    [member.id]: 0
+                })
+            }
         }
     })
 })
@@ -77,9 +79,11 @@ client.on(Events.GuildMemberAdd, (member) => {
 client.on(Events.GuildMemberRemove, (member) => {
     getDoc(doc(db, "servers", member.guild.id)).then((docSnap) => {
         if (docSnap.exists()) {
-            updateDoc(doc(db, "servers", member.guild.id), {
-                [member.id]: deleteField()
-            })
+            if (!member.user.bot) {
+                updateDoc(doc(db, "servers", member.guild.id), {
+                    [member.id]: deleteField()
+                })
+            }
         }
     })
 })
