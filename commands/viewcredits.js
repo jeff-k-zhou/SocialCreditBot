@@ -14,7 +14,7 @@ module.exports = {
         ),
     async execute(interaction) {
         const target = interaction.options.getUser("target")
-        await getDoc(doc(db, "servers", interaction.guild.id)).then((docSnap) => {
+        await getDoc(doc(db, "servers", interaction.guild.id)).then(async (docSnap) => {
             if (docSnap.exists()) {
                 let embed;
                 if (!target) {
@@ -22,9 +22,9 @@ module.exports = {
                 } else {
                     embed = ViewCredits(target.username, docSnap.data()[target.id])
                 }
-                interaction.deferReply({ embeds: [embed] })
+                await interaction.deferReply({ embeds: [embed] })
             } else {
-                interaction.deferReply("Error: User does not exist. DM longhua for support.")
+                await interaction.deferReply("Error: User does not exist. DM longhua for support.")
             }
         })
     } 
