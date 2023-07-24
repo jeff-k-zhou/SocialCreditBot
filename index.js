@@ -118,7 +118,6 @@ client.on(Events.MessageCreate, message => {
         const userData = userMap.get(userid)
         const difference = message.createdTimestamp - userData.lastMessage.createdTimestamp
         let msgCount = userData.msgCount
-        console.log(difference)
 
         if (difference > diff) {
             userData.msgCount = 1
