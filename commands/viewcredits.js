@@ -16,7 +16,17 @@ module.exports = {
         ),
     async execute(interaction) {
         const target = interaction.options.getUser("target")
-        if (!(target.bot)) {
+        if (!target) {
+            await getDoc(doc(db, "servers", interaction.guild.id)).then((docSnap) => {
+                if (docSnap.exists()) {
+                    let embed;
+                    embed = ViewCredits(interaction.user.username, docSnap.data()[interaction.user.id])
+                    interaction.reply({ embeds: [embed] })
+                } else {
+                    interaction.reply({ content: "Error: User does not exist. DM longhua for support." })
+                }
+            })
+        } else if (!(target.bot)) {
             await getDoc(doc(db, "servers", interaction.guild.id)).then((docSnap) => {
                 if (docSnap.exists()) {
                     let embed;
@@ -27,7 +37,7 @@ module.exports = {
                     }
                     interaction.reply({ embeds: [embed] })
                 } else {
-                    interaction.reply({ content: "Error: User does not exist. DM longhua for support."})
+                    interaction.reply({ content: "Error: User does not exist. DM longhua for support." })
                 }
             })
         } else {
