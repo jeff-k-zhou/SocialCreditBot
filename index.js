@@ -77,7 +77,7 @@ client.on(Events.GuildMemberAdd, (member) => {
                 }).then(() => {
                     getDoc(doc(db, member.guild.id, "info")).then((docSnap) => {
                         if (docSnap.data().autorole) {
-                            member.guild.roles.fetch("1133486083708043284").then(role => {
+                            member.guild.roles.fetch(docSnap.data().role).then(role => {
                                 member.roles.add(role)
                             })
                         }

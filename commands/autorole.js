@@ -6,15 +6,22 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("autorole")
         .setDescription("Toggle autorole")
+        .addRoleOption(option =>
+            option
+                .setName("role")
+                .setDescription("auto role")
+                .setRequired(true)
+        )
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
+        const role = await interaction.options.getRole("role")
         interaction.deferReply().then(() => {
             getDoc(doc(db, interaction.guild.id, "info")).then((docSnap) => {
                 updateDoc(doc(db, interaction.guild.id, "info"), {
-                    autorole: !(docSnap.data().autorole)
+                    autorole: true,
+                    role: role.id
                 }).then(() => {
-                    const auto = docSnap.data().autorole
-                    interaction.editReply({ content: `${auto ? "Turned autorole off" : "Turned autorole on"}` })
+                    interaction.editReply({ content: `Autorole set!` })
                 })
             })
         })
