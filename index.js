@@ -4,7 +4,7 @@ const db = require("./firebase")
 const path = require("node:path")
 const fs = require("node:fs")
 const Loadup = require("./loadup")
-const { setDoc, getDoc, doc, updateDoc, deleteField, deleteDoc, increment } = require("firebase/firestore")
+const { setDoc, getDoc, doc, updateDoc, deleteDoc, increment, collection, getDocs } = require("firebase/firestore")
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -32,26 +32,23 @@ for (const file of commandFiles) {
 
 
 
-client.on("ready", () => {
+client.on(Events.ClientReady, () => {
     console.log(`Logged as ${client.user.tag}`)
     Loadup()
 })
 
 client.on(Events.GuildCreate, (guild) => {
-    getDoc(doc(db, "servers", guild.id)).then((docSnap) => {
-        if (docSnap.exists()) {
+    getDocs(collection(db, guild.id)).then((docs) => {
+        if (docs.size > 0) {
             guild.systemChannel.send("Unexpected error: Server ID already exists. DM longhua for support. Leaving server now.")
             guild.leave()
         } else {
             guild.members.fetch().then((list) => {
-                const members = list.map(member => member.user.id)
-                setDoc(doc(db, "servers", guild.id), {
-
-                }).then(() => {
-                    members.forEach((member) => {
-                        updateDoc(doc(db, "servers", guild.id), {
-                            [member]: 0
-                        })
+                const members = list.filter(member => !member.user.bot).map(member => member.user)
+                members.forEach(member => {
+                    setDoc(doc(db, guild.id, member.id), {
+                        credits: 0,
+                        username: member.username
                     })
                 })
             })
@@ -59,28 +56,32 @@ client.on(Events.GuildCreate, (guild) => {
     })
 })
 
-client.on(Events.GuildDelete, (guild) => {
-    deleteDoc(doc(db, "servers", guild.id))
+client.on(Events.GuildDelete, (guild) => { 
+    getDocs(collection(db, guild.id)).then(docs => {
+        docs.forEach((docSnap) => {
+            deleteDoc(doc(db, guild.id, docSnap.id))
+        })
+    })
 })
 
 client.on(Events.GuildMemberAdd, (member) => {
-    getDoc(doc(db, "servers", member.guild.id)).then((docSnap) => {
-        if (docSnap.exists()) {
-            updateDoc(doc(db, "servers", member.guild.id), {
-                [member.id]: 0
-            })
+    getDoc(doc(db, member.guild.id, member.user.id)).then((docSnap) => {
+        if (!docSnap.exists()) {
+            if (!member.user.bot) {
+                setDoc(doc(db, member.guild.id, member.user.id), {
+                    credits: 0,
+                    username: member.user.username
+                })
+            }
+        } else {
+            member.guild.systemChannel.send({ content: "Unexpected error: User already exists. DM longhua for support. Kicking member." })
+            member.kick("Unexpected error. DM longhua for support")
         }
     })
 })
 
 client.on(Events.GuildMemberRemove, (member) => {
-    getDoc(doc(db, "servers", member.guild.id)).then((docSnap) => {
-        if (docSnap.exists()) {
-            updateDoc(doc(db, "servers", member.guild.id), {
-                [member.id]: deleteField()
-            })
-        }
-    })
+    deleteDoc(doc(db, member.guild.id, member.user.id))
 })
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -107,13 +108,14 @@ client.on(Events.InteractionCreate, async interaction => {
 })
 
 const userMap = new Map()
-const limit = 15
+const limit = 7
 const diff = 60000
 
 client.on(Events.MessageCreate, message => {
     if (message.author.bot) return
 
     const userid = message.author.id
+    const field = `${message.author.id}.credits`
     if (userMap.has(userid)) {
         const userData = userMap.get(userid)
         const difference = message.createdTimestamp - userData.lastMessage.createdTimestamp
@@ -122,12 +124,16 @@ client.on(Events.MessageCreate, message => {
         if (difference > diff) {
             userData.msgCount = 1
             userData.lastMessage = message
+            const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
+            updateDoc(doc(db, message.guild.id, message.author.id), {
+                credits: increment(increase)
+            })
         } else {
             ++msgCount
             if (!(parseInt(msgCount) === limit)) {
                 const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
-                updateDoc(doc(db, "servers", message.guild.id), {
-                    [message.author.id]: increment(increase)
+                updateDoc(doc(db, message.guild.id, message.author.id), {
+                    credits: increment(increase)
                 })
                 userData.msgCount = msgCount
             }
@@ -136,6 +142,10 @@ client.on(Events.MessageCreate, message => {
         userMap.set(message.author.id, {
             msgCount: 1,
             lastMessage: message
+        })
+        const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
+        updateDoc(doc(db, message.guild.id, message.author.id), {
+            credits: increment(increase)
         })
     }
 })
