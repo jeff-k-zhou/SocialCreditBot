@@ -49,11 +49,10 @@ client.on(Events.GuildCreate, (guild) => {
                     setDoc(doc(db, guild.id, member.user.id), {
                         credits: 0,
                         username: member.user.username
-                    }).then(() => {
-                        guild.roles.fetch("1133486083708043284").then(role => {
-                            member.roles.add(role)
-                        })
                     })
+                })
+                setDoc(doc(db, guild.id, "info"), {
+                    autorole: false
                 })
             })
         }
@@ -76,8 +75,12 @@ client.on(Events.GuildMemberAdd, (member) => {
                     credits: 0,
                     username: member.user.username
                 }).then(() => {
-                    member.guild.roles.fetch("1133486083708043284").then(role => {
-                        member.roles.add(role)
+                    getDoc(doc(db, member.guild.id, "info")).then((docSnap) => {
+                        if (docSnap.data().autorole) {
+                            member.guild.roles.fetch("1133486083708043284").then(role => {
+                                member.roles.add(role)
+                            })
+                        }
                     })
                 })
             }
