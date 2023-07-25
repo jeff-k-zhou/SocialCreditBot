@@ -1,8 +1,12 @@
-function ViewCredits(user, credits) {
+function ViewCredits(user, credits, icon) {
     return {
-        title: `${user} has ${credits} credits`,
+        title: `${credits} credits`,
         description: "Send more messages to earn more social credits!",
-        color: 0x0099ff
+        color: 0x0099ff,
+        author: {
+            name: user,
+            iconUrl: icon
+        }
     }
 }
 
@@ -10,7 +14,7 @@ function Leaderboard(list) {
     return {
         title: "Leaderboard",
         description: "Top 10 members in the server",
-        color: 0x00cc00,
+        color: 0xCC0000,
         fields: list
     }
 }

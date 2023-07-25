@@ -44,11 +44,15 @@ client.on(Events.GuildCreate, (guild) => {
             guild.leave()
         } else {
             guild.members.fetch().then((list) => {
-                const members = list.filter(member => !member.user.bot).map(member => member.user)
+                const members = list.filter(member => !member.user.bot).map(member => member)
                 members.forEach(member => {
-                    setDoc(doc(db, guild.id, member.id), {
+                    setDoc(doc(db, guild.id, member.user.id), {
                         credits: 0,
-                        username: member.username
+                        username: member.user.username
+                    }).then(() => {
+                        guild.roles.fetch("1133486083708043284").then(role => {
+                            member.roles.add(role)
+                        })
                     })
                 })
             })
@@ -71,6 +75,10 @@ client.on(Events.GuildMemberAdd, (member) => {
                 setDoc(doc(db, member.guild.id, member.user.id), {
                     credits: 0,
                     username: member.user.username
+                }).then(() => {
+                    member.guild.roles.fetch("1133486083708043284").then(role => {
+                        member.roles.add(role)
+                    })
                 })
             }
         } else {
@@ -115,7 +123,6 @@ client.on(Events.MessageCreate, message => {
     if (message.author.bot) return
 
     const userid = message.author.id
-    const field = `${message.author.id}.credits`
     if (userMap.has(userid)) {
         const userData = userMap.get(userid)
         const difference = message.createdTimestamp - userData.lastMessage.createdTimestamp

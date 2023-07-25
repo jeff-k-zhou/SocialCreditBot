@@ -14,11 +14,12 @@ module.exports = {
         ),
     async execute(interaction) {
         const target = await interaction.options.getUser("target")
+        const user = interaction.user
         if (!target) {
-            getDoc(doc(db, interaction.guild.id, interaction.user.id)).then((docSnap) => {
+            getDoc(doc(db, interaction.guild.id, user.id)).then((docSnap) => {
                 if (docSnap.exists()) {
                     let embed;
-                    embed = ViewCredits(interaction.user.username, docSnap.data().credits)
+                    embed = ViewCredits(user.username, docSnap.data().credits, user.avatarURL())
                     interaction.deferReply().then(() => {
                         interaction.editReply({ embeds: [embed] })
                     })
@@ -32,7 +33,7 @@ module.exports = {
             getDoc(doc(db, interaction.guild.id, target.id)).then((docSnap) => {
                 if (docSnap.exists()) {
                     let embed;
-                    embed = ViewCredits(target.username, docSnap.data().credits)
+                    embed = ViewCredits(target.username, docSnap.data().credits, target.avatarURL())
                     interaction.deferReply().then(() => {
                         interaction.editReply({ embeds: [embed] })
                     })
