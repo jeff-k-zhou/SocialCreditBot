@@ -1,5 +1,5 @@
 require("dotenv").config()
-const { Client, GatewayIntentBits, Collection, Events } = require("discord.js")
+const { Client, GatewayIntentBits, Collection, Events, MessageType } = require("discord.js")
 const db = require("./firebase")
 const path = require("node:path")
 const fs = require("node:fs")
@@ -91,7 +91,9 @@ client.on(Events.GuildMemberAdd, (member) => {
 })
 
 client.on(Events.GuildMemberRemove, (member) => {
-    deleteDoc(doc(db, member.guild.id, member.user.id))
+    const id = member.guild.id
+    const userid = member.user.id
+    deleteDoc(doc(db, id, userid))
 })
 
 client.on(Events.InteractionCreate, async interaction => {
@@ -121,8 +123,9 @@ const userMap = new Map()
 const limit = 7
 const diff = 60000
 
-client.on(Events.MessageCreate, message => {
+client.on(Events.MessageCreate, async message => {
     if (message.author.bot) return
+    if (message.type === MessageType.UserJoin) return
 
     const userid = message.author.id
     if (userMap.has(userid)) {
@@ -134,14 +137,14 @@ client.on(Events.MessageCreate, message => {
             userData.msgCount = 1
             userData.lastMessage = message
             const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
-            updateDoc(doc(db, message.guild.id, message.author.id), {
+            await updateDoc(doc(db, message.guild.id, message.author.id), {
                 credits: increment(increase)
             })
         } else {
             ++msgCount
             if (!(parseInt(msgCount) === limit)) {
                 const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
-                updateDoc(doc(db, message.guild.id, message.author.id), {
+                await updateDoc(doc(db, message.guild.id, message.author.id), {
                     credits: increment(increase)
                 })
                 userData.msgCount = msgCount
@@ -153,7 +156,7 @@ client.on(Events.MessageCreate, message => {
             lastMessage: message
         })
         const increase = Math.floor(Math.random() * (7 - 2 + 1) + 2)
-        updateDoc(doc(db, message.guild.id, message.author.id), {
+        await updateDoc(doc(db, message.guild.id, message.author.id), {
             credits: increment(increase)
         })
     }
