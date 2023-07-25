@@ -51,6 +51,7 @@ client.on(Events.GuildCreate, (guild) => {
                         username: member.user.username
                     })
                 })
+            }).then(() => {
                 setDoc(doc(db, guild.id, "info"), {
                     autorole: false
                 })
