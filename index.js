@@ -43,6 +43,9 @@ client.on(Events.GuildCreate, (guild) => {
             guild.systemChannel.send("Unexpected error: Server ID already exists. DM longhua for support. Leaving server now.")
             guild.leave()
         } else {
+            setDoc(doc(db, guild.id, "info"), {
+                autorole: false
+            })
             guild.members.fetch().then((list) => {
                 const members = list.filter(member => !member.user.bot).map(member => member)
                 members.forEach(member => {
@@ -50,10 +53,6 @@ client.on(Events.GuildCreate, (guild) => {
                         credits: 0,
                         username: member.user.username
                     })
-                })
-            }).then(() => {
-                setDoc(doc(db, guild.id, "info"), {
-                    autorole: false
                 })
             })
         }
