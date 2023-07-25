@@ -8,7 +8,6 @@ module.exports = {
         .setDescription("Shut off autorole")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
-        const role = await interaction.options.getRole("role")
         interaction.deferReply().then(() => {
             updateDoc(doc(db, interaction.guild.id, "info"), {
                 autorole: false,
