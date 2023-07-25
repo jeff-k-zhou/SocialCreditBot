@@ -6,6 +6,15 @@ function ViewCredits(user, credits) {
     }
 }
 
+function Leaderboard(list) {
+    return {
+        title: "Leaderboard",
+        description: "Top 10 members in the server",
+        color: 0x00cc00,
+        fields: list
+    }
+}
+
 module.exports = {
-    ViewCredits
+    ViewCredits, Leaderboard
 }
