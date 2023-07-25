@@ -13,31 +13,37 @@ module.exports = {
                 .setDescription("target @member")
         ),
     async execute(interaction) {
-        await interaction.deferReply().then(() => {
-            const target = interaction.options.getUser("target")
-            if (!target) {
-                getDoc(doc(db, interaction.guild.id, interaction.user.id)).then((docSnap) => {
-                    if (docSnap.exists()) {
-                        let embed;
-                        embed = ViewCredits(interaction.user.username, docSnap.data().credits)
+        const target = await interaction.options.getUser("target")
+        if (!target) {
+            getDoc(doc(db, interaction.guild.id, interaction.user.id)).then((docSnap) => {
+                if (docSnap.exists()) {
+                    let embed;
+                    embed = ViewCredits(interaction.user.username, docSnap.data().credits)
+                    interaction.deferReply().then(() => {
                         interaction.editReply({ embeds: [embed] })
-                    } else {
+                    })
+                } else {
+                    interaction.deferReply().then(() => {
                         interaction.editReply({ content: "Error: User does not exist. DM longhua for support." })
-                    }
-                })
-            } else if (!(target.bot)) {
-                getDoc(doc(db, interaction.guild.id, target.id)).then((docSnap) => {
-                    if (docSnap.exists()) {
-                        let embed;
-                        embed = ViewCredits(target.username, docSnap.data().credits)
+                    })
+                }
+            })
+        } else if (!(target.bot)) {
+            getDoc(doc(db, interaction.guild.id, target.id)).then((docSnap) => {
+                if (docSnap.exists()) {
+                    let embed;
+                    embed = ViewCredits(target.username, docSnap.data().credits)
+                    interaction.deferReply().then(() => {
                         interaction.editReply({ embeds: [embed] })
-                    } else {
+                    })
+                } else {
+                    interaction.deferReply().then(() => {
                         interaction.editReply({ content: "Error: User does not exist. DM longhua for support." })
-                    }
-                })
-            } else {
-                interaction.editReply({ content: "Bots cannot have credits", ephemeral: true })
-            }
-        })
+                    })
+                }
+            })
+        } else {
+            interaction.reply({ content: "Bots cannot have credits", ephemeral: true })
+        }
     }
 }
