@@ -59,7 +59,7 @@ client.on(Events.GuildCreate, (guild) => {
     })
 })
 
-client.on(Events.GuildDelete, (guild) => { 
+client.on(Events.GuildDelete, (guild) => {
     getDocs(collection(db, guild.id)).then(docs => {
         docs.forEach((docSnap) => {
             deleteDoc(doc(db, guild.id, docSnap.id))
@@ -74,19 +74,18 @@ client.on(Events.GuildMemberAdd, (member) => {
                 setDoc(doc(db, member.guild.id, member.user.id), {
                     credits: 0,
                     username: member.user.username
-                }).then(() => {
-                    getDoc(doc(db, member.guild.id, "info")).then((docSnap) => {
-                        if (docSnap.data().autorole) {
-                            member.guild.roles.fetch(docSnap.data().role).then(role => {
-                                member.roles.add(role)
-                            })
-                        }
-                    })
+                })
+                getDoc(doc(db, member.guild.id, "info")).then((docSnap) => {
+                    if (docSnap.data().autorole) {
+                        member.guild.roles.fetch(docSnap.data().role).then(role => {
+                            member.roles.add(role)
+                        })
+                    }
                 })
             }
         } else {
             member.guild.systemChannel.send({ content: "Unexpected error: User already exists. DM longhua for support. Kicking member." })
-            member.kick("Unexpected error. DM longhua for support")
+            member.kick("Unexpected error: User already exists.")
         }
     })
 })
