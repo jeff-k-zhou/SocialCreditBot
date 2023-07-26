@@ -126,6 +126,7 @@ const diff = 60000
 client.on(Events.MessageCreate, async message => {
     if (message.author.bot) return
     if (message.type === MessageType.UserJoin) return
+    if (message.author.system) return
 
     const userid = message.author.id
     if (userMap.has(userid)) {

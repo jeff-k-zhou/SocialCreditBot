@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js")
-const { getDoc, doc, updateDoc } = require("firebase/firestore")
+const { doc, updateDoc } = require("firebase/firestore")
 const db = require("../firebase")
 
 module.exports = {
