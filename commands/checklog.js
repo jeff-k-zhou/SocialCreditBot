@@ -8,7 +8,7 @@ module.exports = {
         .setDescription("returns current log channel")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
-        interaction.deferReply({ epheremal: true }).then(() => {
+        interaction.deferReply({ ephemeral: true }).then(() => {
             getDoc(doc(db, interaction.guild.id, "info")).then((docSnap) => {
                 if (docSnap.data().log) {
                     interaction.editReply({ content: `Log channel: <#${docSnap.data().log}>` })
