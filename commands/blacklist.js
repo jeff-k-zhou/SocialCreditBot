@@ -51,49 +51,60 @@ module.exports = {
         let isLog = false
         let blacklist
         let logchannel
-        getDoc(doc(db, interaction.guild.id, "info")).then((docSnap) => {
-            blacklist = docSnap.data().blacklist
-            blacklistrole = docSnap.data().blacklistrole
-            if (docSnap.data().log) {
-                isLog = true
-                logchannel = docSnap.data().log
-            }
-        }).then(() => {
-            interaction.deferReply({ ephemeral: isLog }).then(() => {
-                if (blacklist && blacklistrole) {
-                    interaction.guild.members.fetch(user.id).then(member => {
-                        if (member.roles.cache.has(blacklistrole)) {
-                            interaction.editReply({ content: "Member already in blacklist." })
-                        } else {
-                            member.roles.set([], ["blacklisted"]).then(() => {
-                                member.roles.add(blacklistrole).then(() => {
-                                    const embed = Blacklist(days, hours, minutes, seconds, reason, user, interaction.user)
-                                    if (days || hours || minutes || seconds) {
-                                        setTimeout(() => {
-                                            member.roles.remove(blacklistrole)
-                                        }, (
-                                            (days * 24 * 60 * 60 * 1000) + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000)
-                                        ))
-                                    }
-                                    if (isLog) {
-                                        interaction.guild.channels.fetch(logchannel).then((channel) => {
-                                            channel.send({ embeds: [embed] })
-                                            interaction.editReply({ content: `Success! Logged in <#${logchannel}>` })
-                                        })
-                                    } else {
-                                        interaction.editReply({ content: "Use /setlog to log all admin commands in only 1 channel!", embeds: [embed] })
-                                    }
-                                }).catch((error) => {
-                                    console.error(error)
-                                    interaction.editReply({ content: "Error: Bot does not have required permissions." })
-                                })
-                            })
-                        }
-                    })
-                } else {
-                    interaction.editReply({ content: "Blacklist role and channel have not been set yet. Use command /setblacklist" })
+        let autorole
+        if (user.bot) {
+            return
+        } else {
+            getDoc(doc(db, interaction.guild.id, "info")).then((docSnap) => {
+                blacklist = docSnap.data().blacklist
+                blacklistrole = docSnap.data().blacklistrole
+                if (docSnap.data().log) {
+                    isLog = true
+                    logchannel = docSnap.data().log
                 }
+                if (docSnap.data().autorole) {
+                    autorole = docSnap.data().role
+                }
+            }).then(() => {
+                interaction.deferReply({ ephemeral: isLog }).then(() => {
+                    if (blacklist && blacklistrole) {
+                        interaction.guild.members.fetch(user.id).then(member => {
+                            if (member.roles.cache.has(blacklistrole)) {
+                                interaction.editReply({ content: "Member already in blacklist." })
+                            } else {
+                                member.roles.set([], ["blacklisted"]).then(() => {
+                                    member.roles.add(blacklistrole).then(() => {
+                                        const embed = Blacklist(days, hours, minutes, seconds, reason, user, interaction.user)
+                                        if (days || hours || minutes || seconds) {
+                                            setTimeout(() => {
+                                                member.roles.remove(blacklistrole)
+                                                if (autorole) {
+                                                    member.roles.add(role)
+                                                }
+                                            }, (
+                                                (days * 24 * 60 * 60 * 1000) + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + (seconds * 1000)
+                                            ))
+                                        }
+                                        if (isLog) {
+                                            interaction.guild.channels.fetch(logchannel).then((channel) => {
+                                                channel.send({ embeds: [embed] })
+                                                interaction.editReply({ content: `Success! Logged in <#${logchannel}>` })
+                                            })
+                                        } else {
+                                            interaction.editReply({ content: "Use /setlog to log all admin commands in only 1 channel!", embeds: [embed] })
+                                        }
+                                    }).catch((error) => {
+                                        console.error(error)
+                                        interaction.editReply({ content: "Error: Bot does not have required permissions." })
+                                    })
+                                })
+                            }
+                        })
+                    } else {
+                        interaction.editReply({ content: "Blacklist role and channel have not been set yet. Use command /setblacklist" })
+                    }
+                })
             })
-        })
+        }
     }
 }

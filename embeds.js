@@ -32,7 +32,7 @@ function BalanceChange(deduct, amount, user, reason, admin) {
 function Blacklist(days, hours, minutes, seconds, reason, user, admin) {
     let result = "for"
     if (!(days || minutes || seconds || hours)) {
-        result = permanently
+        result = "permanently"
     } else {
         if (days) {
             result += ` ${days} ${days === 1 ? "day" : "days"}`
@@ -69,6 +69,23 @@ function Blacklist(days, hours, minutes, seconds, reason, user, admin) {
     }
 }
 
+function Unlist(user, admin, reason) {
+    return {
+        title: `${user.username} has been unlisted`,
+        description: `**Reason**: ${reason}`,
+        thumbnail: {
+            url: user.avatarURL()
+        },
+        author: {
+            name: admin.username,
+            iconUrl: admin.avatarURL()
+        },
+        footer: {
+            text: `${new Date().toDateString()}`
+        }
+    }
+}
+
 module.exports = {
-    ViewCredits, Leaderboard, BalanceChange, Blacklist
+    ViewCredits, Leaderboard, BalanceChange, Blacklist, Unlist
 }
