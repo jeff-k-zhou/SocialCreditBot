@@ -38,7 +38,7 @@ function Blacklist(days, hours, minutes, seconds, reason, user, admin) {
             result += ` ${days} ${days === 1 ? "day" : "days"}`
         }
         if (hours) {
-            result += `${hours} ${hours === 1 ? "hour" : "hours"}`
+            result += ` ${hours} ${hours === 1 ? "hour" : "hours"}`
         }
         if (minutes) {
             result += ` ${minutes} ${minutes === 1 ? "minute" : "minutes"}`
