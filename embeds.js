@@ -81,7 +81,7 @@ function Unlist(user, admin, reason) {
             iconUrl: admin.avatarURL()
         },
         footer: {
-            text: `${new Date().toDateString()}`
+            text: `${new Date().toLocaleDateString()}`
         }
     }
 }
