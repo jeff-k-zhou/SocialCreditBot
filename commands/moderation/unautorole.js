@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js")
 const { doc, updateDoc } = require("firebase/firestore")
-const db = require("../firebase")
+const db = require("../../firebase")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,7 +8,7 @@ module.exports = {
         .setDescription("Shut off autorole")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
-        interaction.deferReply().then(() => {
+        interaction.deferReply({ ephemeral: true }).then(() => {
             updateDoc(doc(db, interaction.guild.id, "info"), {
                 autorole: false,
             }).then(() => {

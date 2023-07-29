@@ -12,29 +12,51 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
     ]
 })
+const Timeout = require("./functions/timeout")
 const token = process.env.TOKEN
 
 client.commands = new Collection()
 
-const commandsPath = path.join(__dirname, "commands")
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"))
+const foldersPath = path.join(__dirname, "commands")
+const commandFolders = fs.readdirSync(foldersPath)
 
-for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file)
-    const command = require(filePath)
-
-    if ("data" in command && "execute" in command) {
-        client.commands.set(command.data.name, command)
-    } else {
-        console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`)
+for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder)
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"))
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file)
+        const command = require(filePath)
+        if ('data' in command && 'execute' in command) {
+            client.commands.set(command.data.name, command);
+        } else {
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        }
     }
 }
 
 
 
-client.on(Events.ClientReady, () => {
-    console.log(`Logged as ${client.user.tag}`)
-    Loadup()
+client.on(Events.ClientReady, (client) => {
+    client.guilds.fetch().then(guilds => {
+        console.log("Fetching guilds...")
+        guilds.forEach(guild => {
+            guild.fetch().then(guild => {
+                console.log("Fetching members...")
+                guild.members.fetch().then(members => {
+                    console.log("Filtering out bots...")
+                    const list = members.filter(member => !member.user.bot).map(member => member)
+                    console.log("Setting timers...")
+                    list.forEach(member => {
+                        Timeout(guild.id, member.id)
+                    })
+                    console.log("Timers set!")
+                }).then(() => {
+                    console.log(`Logged as ${client.user.tag}`)
+                    Loadup()
+                })
+            })
+        })
+    })
 })
 
 client.on(Events.GuildCreate, (guild) => {
@@ -51,7 +73,10 @@ client.on(Events.GuildCreate, (guild) => {
                 members.forEach(member => {
                     setDoc(doc(db, guild.id, member.user.id), {
                         credits: 0,
-                        username: member.user.username
+                        username: member.user.username,
+                        offenses: 0
+                    }).then(() => {
+                        Timeout(guild.id, member.id)
                     })
                 })
             })
@@ -82,6 +107,7 @@ client.on(Events.GuildMemberAdd, (member) => {
                         })
                     }
                 })
+                Timeout(member.guild.id, member.id)
             }
         } else {
             member.guild.systemChannel.send({ content: "Unexpected error: User already exists. DM longhua for support. Kicking member." })

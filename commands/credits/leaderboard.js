@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js")
-const { Leaderboard } = require("../embeds")
+const { Leaderboard } = require("../../embeds")
 const { query, collection, orderBy, limit, getDocs } = require("firebase/firestore")
-const db = require("../firebase")
+const db = require("../../firebase")
 
 module.exports = {
     data: new SlashCommandBuilder()

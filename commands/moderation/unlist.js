@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js")
-const { Unlist } = require("../embeds")
+const { Unlist } = require("../../embeds")
 const { doc, getDoc } = require("firebase/firestore")
-const db = require("../firebase")
+const db = require("../../firebase")
 
 module.exports = {
     data: new SlashCommandBuilder()

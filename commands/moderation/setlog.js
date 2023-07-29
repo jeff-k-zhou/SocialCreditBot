@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ChannelType } = require("discord.js")
 const { updateDoc, doc } = require("firebase/firestore")
-const db = require("../firebase")
+const db = require("../../firebase")
 
 module.exports = {
     data: new SlashCommandBuilder()
