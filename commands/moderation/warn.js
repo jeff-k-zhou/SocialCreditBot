@@ -45,7 +45,10 @@ module.exports = {
                             interaction.editReply({ content: "User already in blacklist!" })
                         } else {
                             getDoc(doc(db, interaction.guild.id, user.id)).then((docSnap) => {
-                                const offenses = docSnap.data().offenses + 1
+                                let offenses = docSnap.data().offenses + 1
+                                if (offenses > 10) {
+                                    offenses = 10
+                                }
                                 const punishment = punishments[offenses]
                                 const result = docSnap.data().credits - punishment
                                 updateDoc(doc(db, interaction.guild.id, user.id), {
