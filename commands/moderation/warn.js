@@ -75,7 +75,7 @@ module.exports = {
                                     }
                                     let embed = Warn(user, admin, reason, punishment, offenses, statement)
                                     interaction.editReply({ content: `Success! Logged in <#${logchannel}>` })
-                                    interaction.guild.channels.fetch(blacklistchannel).then(channel => {
+                                    interaction.guild.channels.fetch(logchannel).then(channel => {
                                         channel.send({ embeds: [embed] })
                                     })
                                 })
