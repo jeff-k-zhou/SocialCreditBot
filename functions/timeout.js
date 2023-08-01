@@ -20,7 +20,7 @@ function Timeout(guildid, memberid, time) {
             Timeout(guild, member)
         })
     }, time ? time : (2 * 7 * 24 * 60 * 60 * 1000))
-    const signals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGKILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM']
+    const signals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM']
     signals.forEach(function (sig) {
         process.on(sig, function () {
             updateDoc(doc(db, guildid, memberid), {
