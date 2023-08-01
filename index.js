@@ -13,6 +13,7 @@ const client = new Client({
     ]
 })
 const Timeout = require("./functions/timeout")
+const Blacklist = require("./functions/blacklist")
 const token = process.env.TOKEN
 
 client.commands = new Collection()
@@ -47,7 +48,21 @@ client.on(Events.ClientReady, (client) => {
                     const list = members.filter(member => !member.user.bot).map(member => member)
                     console.log("Setting timers...")
                     list.forEach(member => {
-                        Timeout(guild.id, member.id)
+                        getDoc(doc(db, member.guild.id, member.id)).then((docSnap) => {
+                            if (docSnap.data().timestamp) {
+                                Timeout(member.guild.id, member.id, docSnap.data().timestamp)
+                            } else {
+                                Timeout(member.guild.id, member.id)
+                            }
+                            if (docSnap.data().blacklisttime) {
+                                const time = docSnap.data().blacklisttime
+                                getDoc(doc(db, member.guild.id, "info")).then((docSnap) => {
+                                    member.guild.roles.fetch(docSnap.data().blacklistrole).then((role) => {
+                                        Blacklist(member.guild.id, member.id, time, role, member)
+                                    })
+                                })
+                            }
+                        })
                     })
                     console.log("Timers set!")
                 }).then(() => {

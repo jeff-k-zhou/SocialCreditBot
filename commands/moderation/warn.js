@@ -4,6 +4,7 @@ const { doc, getDoc, updateDoc } = require("firebase/firestore")
 const { punishments, statements } = require("../../functions/punishments")
 const Switch = require("../../functions/switch")
 const { Warn } = require("../../embeds")
+const Blacklist = require("../../functions/blacklist")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -64,9 +65,7 @@ module.exports = {
                                                 member.roles.set([], ["blacklisted"]).then(() => {
                                                     member.roles.add(role).then(() => {
                                                         if (statements[index].time !== null) {
-                                                            setTimeout(() => {
-                                                                member.roles.remove(role)
-                                                            }, statements[index].time)
+                                                            Blacklist(interaction.guild.id, user.id, statements[index].time, role, member)
                                                         }
                                                     })
                                                 })

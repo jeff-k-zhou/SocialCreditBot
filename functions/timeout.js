@@ -1,7 +1,9 @@
 const { getDoc, updateDoc, doc, increment } = require("firebase/firestore")
 const db = require("../firebase")
 
-function Timeout(guildid, memberid) {
+function Timeout(guildid, memberid, time) {
+    const started = Date.now()
+    const end = started + (2 * 7 * 24 * 60 * 60 * 1000)
     let timer = setTimeout(() => {
         const guild = guildid
         const member = memberid
@@ -17,7 +19,21 @@ function Timeout(guildid, memberid) {
             }
             Timeout(guild, member)
         })
-    }, (2 * 7 * 24 * 60 * 60 * 1000))
+    }, time ? time : (2 * 7 * 24 * 60 * 60 * 1000))
+    const signals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGKILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM']
+    signals.forEach(function (sig) {
+        process.on(sig, function () {
+            updateDoc(doc(db, guildid, memberid), {
+                timestamp: end - Date.now()
+            }).then(() => {
+                console.log("Updated!")
+                console.log("Terminating program: ", sig)
+                process.exit()
+            }).catch((error) => {
+                console.error(error)
+            })
+        });
+    });
 }
 
 module.exports = Timeout
