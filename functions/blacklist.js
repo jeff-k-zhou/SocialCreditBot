@@ -1,7 +1,9 @@
 const { updateDoc, doc, deleteField } = require("firebase/firestore")
 const db = require("../firebase")
+const { EventEmitter } = require("node:events")
 
 function Blacklist(guildid, memberid, time, role, member) {
+    new EventEmitter().setMaxListeners(0)
     const started = Date.now()
     const end = started + time
     setTimeout(() => {
@@ -11,7 +13,7 @@ function Blacklist(guildid, memberid, time, role, member) {
             })
         })
     }, time)
-    const signals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGKILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM']
+    const signals = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGTRAP', 'SIGABRT', 'SIGBUS', 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGTERM']
     signals.forEach(function (sig) {
         process.on(sig, function () {
             updateDoc(doc(db, guildid, memberid), {

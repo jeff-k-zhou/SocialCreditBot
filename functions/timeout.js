@@ -1,7 +1,9 @@
 const { getDoc, updateDoc, doc, increment } = require("firebase/firestore")
 const db = require("../firebase")
+const { EventEmitter } = require("node:events")
 
 function Timeout(guildid, memberid, time) {
+    new EventEmitter.setMaxListeners(0)
     const started = Date.now()
     const end = started + (2 * 7 * 24 * 60 * 60 * 1000)
     let timer = setTimeout(() => {

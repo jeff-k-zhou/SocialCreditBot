@@ -14,11 +14,7 @@ const client = new Client({
 })
 const Timeout = require("./functions/timeout")
 const Blacklist = require("./functions/blacklist")
-const { EventEmitter } = require("node:events")
 const token = process.env.TOKEN
-
-const emitter = new EventEmitter()
-emitter.setMaxListeners(0)
 
 client.commands = new Collection()
 
